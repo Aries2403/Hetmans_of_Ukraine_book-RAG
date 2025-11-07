@@ -1,0 +1,26 @@
+# Вектори та кеш
+chroma_db/
+cache.json
+chunks.json
+
+# Секрети
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# PyCharm
+.idea/
+.vscode/
+
+# Віртуальне середовище
+.venv/
+venv/
+
+# Тимчасові файли
+*.log
+.DS_Store
+Thumbs.db
