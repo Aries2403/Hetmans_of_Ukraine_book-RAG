@@ -1,25 +1,21 @@
-# rag_hetmans.py
+# rag_hetmans.py — ТІЛЬКИ індексація (для Render)
 from config import settings
-from openai import OpenAI
 import os
 import json
 import chromadb
 from sentence_transformers import SentenceTransformer
 
 
-# === Попередження Hugging Face (вже в .env, але на всяк випадок) ===
+# === Налаштування ===
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = settings.HF_HUB_DISABLE_SYMLINKS_WARNING
 
-# === Використовуємо налаштування ===
 CHUNK_SIZE = settings.CHUNK_SIZE
 CHUNK_OVERLAP = settings.CHUNK_OVERLAP
-TOP_K = settings.TOP_K
 CORPUS_DIR = settings.CORPUS_DIR
 CHUNKS_FILE = settings.CHUNKS_FILE
 CHROMA_PATH = settings.CHROMA_PATH
 COLLECTION_NAME = settings.COLLECTION_NAME
 EMBEDDING_MODEL = settings.EMBEDDING_MODEL
-LLM_MODEL = settings.LLM_MODEL
 
 
 # === Крок 2: Чанки ===
@@ -80,7 +76,7 @@ def build_index(chunks):
     collection = client.get_or_create_collection(COLLECTION_NAME)
 
     if collection.count() > 0:
-        print("Індекс вже існує. Пропускаємо.")
+        print("Індекс уже існує. Пропускаємо.")
         return collection
 
     model = SentenceTransformer(EMBEDDING_MODEL)
@@ -106,94 +102,9 @@ def build_index(chunks):
     return collection
 
 
-# === УНІКАЛЬНІСТЬ ЗА ID (Спосіб 2) ===
-def deduplicate_by_id(results):
-    seen = set()
-    unique = []
-    for meta, dist, doc in zip(results["metadatas"][0], results["distances"][0], results["documents"][0]):
-        chunk_id = f"{meta['doc_path']}#{meta['chunk_number']}"
-        if chunk_id not in seen:
-            seen.add(chunk_id)
-            unique.append((meta, dist, doc))
-    return unique
-
-
-# === LLM через OpenAI (v1.0+) ===
-def generate_response(query, context_chunks):
-    context = "\n".join([f"[{i + 1}] {chunk}" for i, (_, _, chunk) in enumerate(context_chunks)])
-
-    prompt = f"""Ти — експерт з історії України. Використовуй ТІЛЬКИ наведений контекст.
-Відповідай коротко (1-3 речення), з номерами джерел [1], [2] тощо.
-Якщо не впевнений — скажи: "Немає точної відповіді".
-
-Запит: {query}
-
-Контекст:
-{context}
-
-Відповідь:"""
-
-    try:
-        client = OpenAI(api_key=settings.OPENAI_API_KEY)
-        response = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0.2,  # ↓ для точності
-            max_tokens=200
-        )
-        return response.choices[0].message.content.strip()
-    except Exception as e:
-        return f"Помилка LLM: {e}"
-
-
-# === Основний цикл ===
-def main():
-    print("Завантаження чанків...")
-    chunks = create_chunks()
-
-    print("Перевірка індексу...")
-    collection = build_index(chunks)
-
-    model = SentenceTransformer(EMBEDDING_MODEL)
-
-    print("\n" + "=" * 60)
-    print("RAG-система з OpenAI готова! (q — вихід)")
-    print("=" * 60)
-
-    while True:
-        query = input("\nЗапит: ").strip()
-        if query.lower() in ['q', 'quit', 'exit']:
-            print("До зустрічі!")
-            break
-        if len(query) < 3:
-            print("Запит занадто короткий.")
-            continue
-
-        # Пошук
-        query_emb = model.encode([query]).tolist()
-        results = collection.query(
-            query_embeddings=query_emb,
-            n_results=TOP_K,
-            include=["documents", "metadatas", "distances"]
-        )
-
-        # Унікальність за ID
-        unique_results = deduplicate_by_id(results)
-        top_chunks = unique_results[:3]  # топ-3 унікальних
-
-        # LLM
-        response = generate_response(query, top_chunks)
-
-        # Джерела
-        sources = []
-        for i, (meta, _, _) in enumerate(top_chunks, 1):
-            sources.append(f"[{i}] {meta['doc_name']} (чанк {meta['chunk_number']})")
-
-        print("\nВідповідь:")
-        print(response)
-        print("\nДжерела:")
-        print(" | ".join(sources))
-
-
+# === ЗАПУСК ТІЛЬКИ ДЛЯ ІНДЕКСАЦІЇ (Render) ===
 if __name__ == "__main__":
-    main()
+    print("Запуск індексації для Render...")
+    chunks = create_chunks()
+    build_index(chunks)
+    print("Індексація завершена. Готово до запуску app.py")
