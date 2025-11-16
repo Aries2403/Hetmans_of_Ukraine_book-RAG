@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt ./
 RUN pip3 install --no-cache-dir -r requirements.txt
 
-COPY app.py config.py ./
+COPY app.py config.py rag_hetmans.py ./
 COPY src/ ./src/
 COPY images/ ./images/
 COPY data/ ./data/
