@@ -1,10 +1,9 @@
 Usi_hetmany_Ukrainy.pdf
 extract_hetmans.py
 evaluate_retrieval.py
-hetman_files/
 
 # Вектори та кеш
-chroma_db/
+#chroma_db/
 cache.json
 chunks.json
 
