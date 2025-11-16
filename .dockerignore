@@ -1,0 +1,14 @@
+# .dockerignore - Файли які НЕ потрібні в Docker образі
+Usi_hetmany_Ukrainy.pdf
+extract_hetmans.py
+evaluate_retrieval.py
+.git
+.gitignore
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+README.md
+.idea/
+.vscode/
