@@ -1,10 +1,9 @@
-# rag_hetmans.py — ТІЛЬКИ індексація (для Render)
+# rag_hetmans.py — ТІЛЬКИ індексація ( для диплою)
 from config import settings
 import os
 import json
 import chromadb
 from sentence_transformers import SentenceTransformer
-
 
 # === Налаштування ===
 os.environ["HF_HUB_DISABLE_SYMLINKS_WARNING"] = settings.HF_HUB_DISABLE_SYMLINKS_WARNING
@@ -39,7 +38,21 @@ def create_chunks():
             return json.load(f)
 
     chunks = []
+
+    # ПЕРЕВІРКА: чи існує директорія
+    if not os.path.exists(CORPUS_DIR):
+        print(f"❌ ПОМИЛКА: Директорія {CORPUS_DIR} не існує!")
+        return []
+
     files = sorted([f for f in os.listdir(CORPUS_DIR) if f.endswith('.txt')])
+
+    # ПЕРЕВІРКА: чи є .txt файли
+    if not files:
+        print(f"❌ ПОМИЛКА: Немає .txt файлів у {CORPUS_DIR}!")
+        print(f"Вміст директорії: {os.listdir(CORPUS_DIR)}")
+        return []
+
+    print(f"✅ Знайдено {len(files)} файлів: {files[:3]}...")
 
     for idx, filename in enumerate(files, 1):
         filepath = os.path.join(CORPUS_DIR, filename)
@@ -72,11 +85,16 @@ def create_chunks():
 
 # === Крок 3: Індекс ===
 def build_index(chunks):
+    # ПЕРЕВІРКА: чи є чанки
+    if not chunks:
+        print("❌ ПОМИЛКА: Немає чанків для індексації!")
+        return None
+
     client = chromadb.PersistentClient(path=CHROMA_PATH)
     collection = client.get_or_create_collection(COLLECTION_NAME)
 
     if collection.count() > 0:
-        print("Індекс уже існує. Пропускаємо.")
+        print(f"✅ Індекс уже існує: {collection.count()} чанків. Пропускаємо.")
         return collection
 
     model = SentenceTransformer(EMBEDDING_MODEL)
@@ -102,7 +120,7 @@ def build_index(chunks):
     return collection
 
 
-# === ЗАПУСК ТІЛЬКИ ДЛЯ ІНДЕКСАЦІЇ (Render) ===
+# === ЗАПУСК ТІЛЬКИ ДЛЯ ІНДЕКСАЦІЇ (render) ===
 if __name__ == "__main__":
     print("Запуск індексації для Render...")
     chunks = create_chunks()

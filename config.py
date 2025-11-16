@@ -7,8 +7,8 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = Field(..., env="OPENAI_API_KEY")
 
     # === ШЛЯХИ ===
-    CORPUS_DIR: str = "/app/hetman_files"
-    CHROMA_PATH: str = "/app/chroma_db"
+    CORPUS_DIR: str = "/app/data/hetman_files"  # ← ЗМІНЕНО: файли в образі
+    CHROMA_PATH: str = "/app/hetman_files/chroma_db"  # ← ЗМІНЕНО: база у Volume
     CHUNKS_FILE: str = "chunks.json"
     COLLECTION_NAME: str = "hetmans"
 
