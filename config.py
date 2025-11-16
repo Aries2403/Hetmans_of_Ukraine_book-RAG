@@ -9,9 +9,11 @@ import os
 class Settings(BaseSettings):
     OPENAI_API_KEY: str = Field(..., env="OPENAI_API_KEY")
 
-    CORPUS_DIR: str = "hetman_files"
+    CORPUS_DIR = "/app/hetman_files"  # ←  папка з .txt
+    CHROMA_PATH = "/app/chroma_db"  # ←    папка з базою
+    #CORPUS_DIR: str = "hetman_files"
     CHUNKS_FILE: str = "chunks.json"
-    CHROMA_PATH: str = "chroma_db"
+    #CHROMA_PATH: str = "chroma_db"
     COLLECTION_NAME: str = "hetmans"
 
     CHUNK_SIZE: int = Field(500, ge=300, le=800)
