@@ -63,7 +63,11 @@ def generate_response(query, context_chunks):
 def rag_query(query):
     model = SentenceTransformer(EMBEDDING_MODEL)
     client = chromadb.PersistentClient(path=CHROMA_PATH)
-    collection = client.get_collection(COLLECTION_NAME)
+
+    try:
+        collection = client.get_collection(COLLECTION_NAME)
+    except:
+        return "⚠️ База даних ще не готова. Спробуйте пізніше.", []
 
     query_emb = model.encode([query]).tolist()
     results = collection.query(
