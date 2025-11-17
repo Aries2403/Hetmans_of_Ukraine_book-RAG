@@ -134,8 +134,11 @@ if query := st.chat_input("Введіть запитання або команд
                         break
 
                 if image_path:
-                    st.image(image_path, caption=name, width=200)
-                    answer = f"Ось фото: **{name}**"
+                    try:
+                        st.image(image_path, caption=name, width=200)
+                        answer = f"Ось фото: **{name}**"
+                    except Exception as e:
+                        answer = f"⚠️ Фото тимчасово недоступне. Помилка: {type(e).__name__}"
                 else:
                     answer = "Фото не знайдено."
 
