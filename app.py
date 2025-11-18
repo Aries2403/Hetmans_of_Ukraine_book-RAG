@@ -1,4 +1,3 @@
-# app.py — ФІНАЛЬНА ВЕРСІЯ (логіка з rag_hetmans.py)
 import streamlit as st
 import json
 import os
@@ -7,21 +6,52 @@ from sentence_transformers import SentenceTransformer
 from openai import OpenAI
 from config import settings
 
-# === Налаштування (з config.py) ===
+# === Налаштування ===
 CACHE_FILE = "cache.json"
 CHROMA_PATH = settings.CHROMA_PATH
 COLLECTION_NAME = settings.COLLECTION_NAME
 EMBEDDING_MODEL = settings.EMBEDDING_MODEL
 TOP_K = settings.TOP_K
 
-# === Кеш ===
 if os.path.exists(CACHE_FILE):
     with open(CACHE_FILE, 'r', encoding='utf-8') as f:
         cache = json.load(f)
 else:
     cache = {}
 
-# === УНІКАЛЬНІСТЬ ЗА ID (як у rag_hetmans.py) ===
+# === CSS ДИЗАЙН (БЕЗПЕЧНА ВЕРСІЯ) ===
+st.markdown("""
+<style>
+    .stApp {
+        background: linear-gradient(180deg, #0057b7 0%, #004c99 30%, #ffd700 100%) !important;
+    }
+
+    h1 {
+        color: #ffd700 !important;
+        text-align: center;
+        font-size: 3rem !important;
+        text-shadow: 3px 3px 6px rgba(0,0,0,0.7);
+        margin-bottom: 0.5rem !important;
+    }
+
+    .subtitle {
+        color: #ffffff;
+        text-align: center;
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+        text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    }
+</style>
+""", unsafe_allow_html=True)
+
+st.markdown("# 🇺🇦 Усі Гетьмани України")
+st.markdown(
+    '<p class="subtitle">RAG-система для семантичного пошуку по книзі "Усі гетьмани України"<br>авт. Реент О.П., Коляда І.А. · 2008</p>',
+    unsafe_allow_html=True)
+st.write("Запитуй — відповідаю **тільки за книгою**! Використовуй `фото Ім'я Прізвище` для фото.")
+
+
+# === УНІКАЛЬНІСТЬ ===
 def deduplicate_by_id(results):
     seen = set()
     unique = []
@@ -32,7 +62,8 @@ def deduplicate_by_id(results):
             unique.append((meta, dist, doc))
     return unique
 
-# === LLM (точно як у rag_hetmans.py) ===
+
+# === LLM ===
 def generate_response(query, context_chunks):
     context = "\n".join([f"[{i + 1}] {chunk}" for i, (_, _, chunk) in enumerate(context_chunks)])
 
@@ -59,7 +90,8 @@ def generate_response(query, context_chunks):
     except Exception as e:
         return f"Помилка LLM: {e}"
 
-# === RAG-запит (як у rag_hetmans.py) ===
+
+# === RAG ===
 def rag_query(query):
     model = SentenceTransformer(EMBEDDING_MODEL)
     client = chromadb.PersistentClient(path=CHROMA_PATH)
@@ -87,15 +119,11 @@ def rag_query(query):
 
     return response, sources
 
-# === GUI ===
-st.set_page_config(page_title="Гетьмани України", layout="centered")
-st.title("Гетьмани України — RAG")
-st.write("Запитуй — відповідаю **тільки за книгою**! Використовуй `фото Ім'я Прізвище` для фото.")
 
+# === ІСТОРІЯ ===
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-# === Відображення історії ===
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.markdown(msg["content"])
@@ -106,14 +134,13 @@ for msg in st.session_state.messages:
         if "image" in msg and msg["image"]:
             st.image(msg["image"], width=200)
 
-# === Ввід ===
+# === ВВІД ===
 if query := st.chat_input("Введіть запитання або команду..."):
     query = query.strip()
     if not query:
         st.warning("Введіть запитання.")
         st.stop()
 
-    # === Зберігаємо запит користувача ===
     st.session_state.messages.append({"role": "user", "content": query})
     with st.chat_message("user"):
         st.markdown(query)
@@ -158,10 +185,9 @@ if query := st.chat_input("Введіть запитання або команд
                     for s in sources:
                         st.write(s)
 
-            # === Зберігаємо відповідь ===
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": answer,
                 "sources": sources,
-                "image": image_path  # None, якщо не було фото
+                "image": image_path
             })
