@@ -1,29 +1,46 @@
-extract_hetmans.py
-evaluate_retrieval.py
+# === ВЕКТОРНА БАЗА (створюється на Railway) ===
+chroma_db/
 
-# Вектори та кеш
-#chroma_db/
+# === ДОКУМЕНТИ (великі файли) ===
+Usi_hetmany_Ukrainy.pdf
+
+# === КЕШ ТА ТИМЧАСОВІ ДАНІ ===
 cache.json
 chunks.json
+*.log
 
-# Секрети
+# === СЕКРЕТИ ===
 .env
+.env.local
 
-# Python
+# === PYTHON ===
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.pyz
+*.egg-info/
+dist/
+build/
 
-# PyCharm
+# === IDE ===
 .idea/
 .vscode/
+*.swp
+*.swo
+*~
 
-# Віртуальне середовище
+# === ВІРТУАЛЬНЕ СЕРЕДОВИЩЕ ===
 .venv/
 venv/
+env/
 
-# Тимчасові файли
-*.log
+# === ОПЕРАЦІЙНІ СИСТЕМИ ===
 .DS_Store
 Thumbs.db
+desktop.ini
+
+# === JUPYTER NOTEBOOKS ===
+.ipynb_checkpoints/
+*.ipynb
+

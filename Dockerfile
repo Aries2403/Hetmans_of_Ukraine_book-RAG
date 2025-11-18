@@ -2,6 +2,10 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
+FROM python:3.12-slim
+
+WORKDIR /app
+
 RUN apt-get update && apt-get install -y \
     build-essential \
     curl \
@@ -11,9 +15,9 @@ COPY requirements.txt ./
 RUN pip3 install --no-cache-dir -r requirements.txt
 
 COPY app.py config.py rag_hetmans.py ./
-COPY src/ ./src/
-COPY images/ ./images/
+COPY book_cover.jpg ./
 COPY data/ ./data/
+COPY images/ ./images/
 
 RUN echo "✅ Файли готові" && \
     echo "📁 Текстові файли:" && \
